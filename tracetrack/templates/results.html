@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+{% block title %}Trace file alignment{% endblock %}
+{% block nav_index %}active{% endblock %}
+{% block head %}
+    {{ super() }}
+
+
+{% endblock %}
+{% block container %}
+<style type="text/css">
+
+</style>
+
+    <div class="row">
+        <div class="col-sm">
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                <p>Traceback</p>
+                <pre> {{ traceback }}</pre>
+            {% elif results is not none %}
+
+                <div id="result">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3>Results</h3>
+                        </div>
+                            <div class="col-md-6 text-right">
+                                <div class="btn-group">
+                                    <a href="/settings/{{ files_id }}/{{ task_id }}" class="btn btn-light">Resubmit</a>
+                                    <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#taskInfo" aria-expanded="false" aria-controls="taskInfo">
+                                        Info
+                                    </button>
+                                    <a href="/excel/{{ task_id }}" class="btn btn-success">Download all</a>
+                                </div>
+                            </div>
+                    </div>
+                    <p id="taskInfo" class="collapse">
+                        Global quality score: <strong>{{ settings.threshold }}</strong>
+                        <br>End trimming quality score: <strong>{{ settings.end_threshold }}</strong>
+                        <br>Match trace files to references by: <strong>{% if settings.search %}Best match{% else %}ID{% endif %}</strong>{% if settings.separate %}, each trace aligned separately{% endif %}
+                    </p>
+
+
+                    <table id="results_table" class="display">
+                        <thead>
+                        <tr>
+                            <th class="d-none">Sort</th>
+                            <th>ID</th>
+                            <th>Group</th>
+                            <th>Cov</th>
+                            <th>Ident</th>
+                            <th>Mutation</th>
+                            <th>Silent</th>
+                            <th>Mis</th>
+                            <th>Nons</th>
+                            <th>Reads</th>
+                            <th>File Names</th>
+                            <th>Download</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                    {% for i, (alignment, (_, row)) in enumerate(zip(alignments, results.iterrows())) %}
+                        <tr>
+                            <td class="d-none">{{ row["Reference ID"] }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary ref-button" type="button">
+                                    {{ row["Reference ID"] }}
+                                </button>
+                                <div class="alignment collapse" data-alignment="{{ i }}">
+                                    <span class="residue {% if alignment.kozak_count %}no_mut{% else %}mis_mut{% endif %}
+                                        cov{{ alignment.kozak_count }}" title="{% if alignment.kozak_count %}Kozak confirmed{% else %}Kozak unconfirmed{% endif %}"
+                                        data-toggle="tooltip" data-html="true">*</span>
+                                    {% for pos in range(alignment.positions|length) %}
+                                        <span class="residue cov{{ [4, alignment.positions[pos].coverage]|min }} {{ alignment.format_position(pos)
+                                            }} " data-codon-num-ref="{{ alignment.get_codon_num(pos, False) }}" data-codon-num-new="{{ alignment.get_codon_num(pos, True)
+                                            }}" data-position="{{ pos }}" data-display-pos="{{ alignment.position_to_display(pos)
+                                            }}" data-feat="{{ alignment.aligned_reference.get_feature_for_pos(pos).id }}" data-ref="{{ alignment.positions[pos].ref
+                                            }}" data-options="{{ ', '.join(alignment.positions[pos].options) }}">{{ alignment.positions[pos].result }}
+                                        </span>
+                                    {% endfor %}
+                                    <span class="residue {% if alignment.stop_count %}no_mut{% else %}mis_mut{% endif %}
+                                        cov{{ alignment.stop_count }}" title="{% if alignment.stop_count %}stop codon confirmed{% else %}stop codon unconfirmed{% endif %}"
+                                        data-toggle="tooltip" data-html="true">*</span>
+                                </div>
+                            </td>
+                            <td>{{ row["Group"] }}</td>
+                            <td data-color-percentage="{{ row['% Coverage'] }}" data-color-bin="{{ get_color_bin(row['% Coverage'], [65, 70, 75, 80, 85, 90]) }}"
+                                class="{% if is_multiple_populations and is_best_for_reference(results, row, '% Coverage') %}population-best{% endif %}">
+                                {{ round(row["% Coverage"], 2) }}
+                            </td>
+                            <td data-color-percentage="{{ row['% Identity'] }}" data-color-bin="{{ get_color_bin(row['% Identity'], [95, 96, 97, 98, 99, 100]) }}"
+                                class="{% if is_multiple_populations and is_best_for_reference(results, row, '% Identity') %}population-best{% endif %}">
+                                {{ round(row["% Identity"], 2) }}
+                            </td>
+                            <td class="color-mutation-{{ row['Mutation Type'].lower() }}">{{ row["Mutation Type"] }}</td>
+                            <td class="">{{ row["Silent Mutations"] }}</td>
+                            <td class="">{{ row["Missense Mutations"] }}</td>
+                            <td class="">{{ row["Nonsense Mutations"] }}</td>
+                            <td class="">{{ row["Number of reads"] }}</td>
+                            <td class="col-file-names">{{ row["File names"] }}</td>
+                            <td><a href='/excel/{{ task_id }}/{{ i }}' class="btn btn-success cut-text" style="max-width: 120px;" >↓</a></td>
+
+                        </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h3>Legend</h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Coverage: </strong>
+                            <span class="cov1 legend"> 1 </span>
+                            <span class="cov2 legend"> 2 </span>
+                            <span class="cov3 legend"> 3 </span>
+                            <span class="cov4 legend"> 4+</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Mutation: </strong>
+                            <span class="no_mut legend">None</span>
+                            <span class="silent_mut legend">Silent</span>
+                            <span class="mis_mut legend">Mis</span>
+                            <span class="nons_mut legend">Nons</span>
+                            <span class="frameshift legend">Frameshift</span>
+                            <span class="mixed_peak legend">Mixed peak</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Codon: </strong>
+                            <span class="codon-ref residue cds">Reference</span>
+                            <span class="codon-new residue cds">Sequenced</span>
+                        </div>
+                    </div>
+
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+<!-- Button trigger modal
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#traceModal">
+  Launch demo modal
+</button>  -->
+
+<div class="modal fade bd-example-modal-lg" id="traceModal" tabindex="-1" role="dialog" aria-labelledby="traceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl " role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="traceModalLabel">Traces for reference ID </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <div id="traceError"></div>
+            <div id="navPlot"></div>
+            <div id="refPlot"></div>
+            <div id="tracePlot"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+<script type="text/javascript" src="{{ url_for('static', filename='trace_viewer.js') | autoversion }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='table_display.js') | autoversion }}"></script>
+<script>
+$(function(){
+    var task_id = '{{ task_id }}'
+
+    $('#traceModal').modal({ show: false});
+
+    var table = $('#results_table');
+    initTable(table, task_id)
+
+    showTooltips()
+    tableColors()
+})
+</script>
+{% endblock %}
+
+
+

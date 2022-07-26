@@ -1,0 +1,23 @@
+--------------------------------------------------
+Third party dependencies listed by License type
+[Format: name (Python module) - URL]
+--------------------------------------------------
+
+Biopython License Agreement
+* Biopython (biopython) - https://github.com/biopython/biopython/blob/d5718bb7e3ee505b859b39c03f8ffad8a9a0be2f/LICENSE.rst
+
+BSD 3-Clause License
+* Pandas (pandas) - https://github.com/pandas-dev/pandas/blob/5aba6659e422e985683cfb46c07c3364a02b6e5b/AUTHORS.md
+* Celery (celery) - https://docs.celeryproject.org/en/stable/
+* Flower (flower) - https://github.com/mher/flower/blob/master/LICENSE
+* Flask (flask) - https://palletsprojects.com/p/flask/
+
+MIT License (MIT)
+* PyTest (pytest) - https://github.com/pytest-dev/pytest/blob/main/LICENSE
+* PyTest-mock (pytest-mock) - https://github.com/pytest-dev/pytest-mock/blob/main/LICENSE
+* PyYAML (pyyaml) - https://github.com/yaml/pyyaml/blob/master/LICENSE
+* redis-py (redis) - https://github.com/andymccurdy/redis-py
+* openpyxl (openpyxl) - https://github.com/fluidware/openpyxl/blob/master/LICENCE, https://foss.heptapod.net/openpyxl/openpyxl/-/blob/branch/3.0/LICENCE.rst ?
+
+GNU General Public License v2.0
+* Clustal Omega (clustalo) - http://www.clustal.org/omega/ ?

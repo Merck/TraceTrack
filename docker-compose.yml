@@ -1,0 +1,39 @@
+version: "3.4"
+services:
+  # Web provides the Flask backend and frontend
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      - redis
+      - worker
+    environment:
+      - FLASK_DEBUG=1
+  # Redis provides the Redis in-memory database that serves as queue for Celery tasks
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  # Worker provides a Celery worker that processes tasks from the redis queue
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: docker
+    command: celery -A tracetrack.tasks worker --loglevel=info
+    depends_on:
+      - redis
+  # Monitor provides a GUI for inspecting the Celery task queue
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    command: flower -A tracetrack.tasks --port=5555
+    depends_on:
+      - redis

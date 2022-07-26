@@ -1,0 +1,9 @@
+.ipynb_checkpoints
+*.pyc
+.idea
+.DS*
+__pycache__
+.kube-tmp-token
+tracetrack.egg-info
+tests/.pytest_cache
+.pytest_cache

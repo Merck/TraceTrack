@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+{% block title %}Trace file alignment{% endblock %}
+{% block nav_help %}active{% endblock %}
+{% block head %}
+    {{ super() }}
+
+
+{% endblock %}
+{% block container %}
+
+    <h2>Help</h2>
+    <br>
+    <h3>Overview</h3>
+    <p>
+        The application accepts a set of trace files and a reference file, performs alignments of trace sequences to corresponding reference sequences and displays an overview of resulting alignments.
+    </p>
+
+    <h3>Uploading Files</h3>
+    <p>
+        Trace files can be uploaded in .ab1 or .zip format. If matching to reference by ID is desired, the trace file name has to contain the corresponding reference ID.
+        Otherwise the file name can be arbitrary.
+    </p>
+    <p>
+        The reference file can be an Excel spreadsheet (.xlsx file), a .csv file, a fasta file or a GenBank file. In case of csv and xlsx, the first row contains a header. Recommended column names are "ID" and "Sequence".
+        A warning will be displayed otherwise, but the functionality is not affected as long as there is a header.
+        The first column contains reference IDs, which can be used to match corresponding trace files. The second column contains the sequences.
+        The reference IDs should be unique for each row.
+        For reference sequences in fasta format, the ID in the header (after ">") is used as sequence ID. Similarly, the ID in a GenBank file is also used.
+    </p>
+    <h3>Trace File Score Threshold</h3>
+    <p>
+        Each position of the sequence contained in a trace file is assigned a score of confidence. A slider enables the user to choose a score threshold.
+        Any positions in the trace file with a lower score are discarded, the coverage in that part of the alignment will then be lower.
+    </p>
+    <h3>End Trimming Score Threshold</h3>
+    <p>
+        As the quality towards the ends of trace files tends to decrease, both ends of sequences are discarded until three bases in a row pass the
+        trimming threshold. This can also be set by the user and should be higher than the score threshold, otherwise it has no effect.
+    </p>
+    <h3>Matching to Reference</h3>
+    <p>
+        Trace files are matched to reference sequences automatically. TraceTrack first checks if the reference ID is contained in the trace file name,
+        and if no match is found this way, then the reference is chosen by best alignment score after aligning the trace file sequence to all the uploaded
+        reference sequences. The read directionality is determined automatically. Both the reference and the directionality can be changed by the user manually.
+    </p>
+    <h3>Data from Multiple Groups</h3>
+    <p>
+        If you wish to upload trace files that share the same reference ID, but come from a different group and you wish them to be aligned separately,
+        upload one set of trace files using the available Choose Files button and another button will appear. Use this to upload
+        files from other groups. You can repeat this step for multiple groups. Within each of the uploaded groups the trace files
+        will be sorted by reference IDs and an alignment will be created for each ID in each group.
+    </p>
+    <h3>Alignments</h3>
+    <p>
+        A multiple sequence alignment is created for each reference and its associated trace sequences. Trace files from each group are aligned separately.
+        Substitution mutations, deletion mutations and insertion mutations are accepted when all trace files agree on them.
+        In detail, the consensus sequence is produced by evaluating each alignment position separately using the following rules:
+         <br>
+
+        <ul>
+            <li>If no reads cover the given position, the reference is kept, coverage is 0.</li>
+            <li>If at least one read matches the reference at the position, the reference nucleotide is kept and the coverage corresponds to the number of reads with this nucleotide at the given position.</li>
+            <li>If all the reads contain the same nucleotide, which differs from the reference, it is accepted as a mutation and the coverage is the number of reads at that position.
+             <ul>
+                <li>This also applies to the situation where there is only one read covering the given position.</li>
+                <li>Gaps in trace files (deletion mutations) are handled same as substitutions - consensus between all trace files is required.</li>
+             </ul>
+            </li>
+            <li>If all the aligned reads contain a gap in the reference (insertion mutation) and all of them contain the same base at given position, the insertion is accepted.</li>
+            <li>If some trace sequences contain a gap in the reference, an unknown insertion is displayed: "?".</li>
+            <li>If the reads differ from the reference but also from each other, the reference nucleotide is kept and coverage is 0.</li>
+        </ul>
+        Every reference must contain at least one coding region (CDS feature). For reference sequences in GenBank format, features are extracted from the file.
+        When reference sequences are uploaded in a different format, the whole sequence is considered coding. Coding and non-coding regions are displayed differently:
+        <ul>
+            <li>Non-coding regions are displayed with lower opacity. CDS features have full opacity. Mutations are highlighted the same way.</li>
+            <li>Codon highlighting starts from the beginning of each CDS. Codons are not highlighted in the rest of the sequence.</li>
+            <li>If an insertion or deletion causes frameshift (shift by a number of positions not divisible by 3), the shifted region is highlighted in yellow and mutation types within the region are disregarded.</li>
+            <li>Frameshift is only displayed in CDS regions and is calculated from the beginning of the corresponding CDS.</li>
+
+        </ul>
+    </p>
+<br>
+    <table class="table table-sm">
+        <tr>
+            <th class="row_heading level0 ">Reference</th>
+            <td>C</td>
+            <td>C</td>
+            <td>C</td>
+            <td>C</td>
+        </tr>
+        <tr>
+            <th class="row_heading level0 ">Read 1</th>
+            <td>A</td>
+            <td>A</td>
+            <td>A</td>
+            <td>A</td>
+        </tr>
+        <tr>
+            <th class="row_heading level0 ">Read 2</th>
+            <td>A</td>
+            <td></td>
+            <td>A</td>
+            <td>C</td>
+        </tr>
+        <tr>
+            <th class="row_heading level0 ">Read 3</th>
+            <td>A</td>
+            <td></td>
+            <td>T</td>
+            <td>A</td>
+        </tr>
+        <tr>
+            <th class="row_heading level0 ">Result</th>
+            <td><strong>A</strong></td>
+            <td><strong>A</strong></td>
+            <td><strong>C</strong></td>
+            <td><strong>C</strong></td>
+        </tr>
+        <tr>
+            <th class="row_heading level0 ">Coverage</th>
+            <td>3</td>
+            <td>1</td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+    </table>
+    <h3>Mixed peak detection</h3>
+    <p>
+        Each trace file is searched for heterogeneous positions. Signal to noise ratio is calculated for all positions
+        as the ratio of the area of the main peak and the sum of areas of all other peaks.
+        Areas with a low StN ratio are excluded from further steps, as these are noisy areas with low quality. Then an approximation of the area under curve fo each of the
+        four traces is calculated at a given position, as well as heights of individual peaks. When a different base than the main called one has
+        both peak area and height greater than a threshold (set to 15% of the main peak) and it's trace is concave around the center of the main peak, the position is marked as mixed.
+        In the alignment, a position is marked as mixed if the secondary peak is detected in two or more trace files, or if it is
+        detected in the only present trace file.
+    </p>
+
+    <h3>Alignment Properties Table</h3>
+    <p>
+        The following properties of each alignment are displayed in the results table:
+        <ul>
+            <li>Reference ID</li>
+            <li>% Coverage: What percentage of the reference sequence has coverage at least 1.</li>
+            <li>% Identity: What percentage of the reference nucleotides are exactly the same as the resulting ones.</li>
+            <li>Mutation Type: Which most severe type of mutation is present (none, silent, missense, nonsense).</li>
+            <li>Mutation counts: The numbers of each of the mutation types present.</li>
+            <li>Number of reads: How many trace files were associated with this reference.</li>
+            <li>File Names: which trace files were associated with this reference.</li>
+        </ul>
+    The table can be ordered by different columns when the header is clicked.
+
+    </p>
+
+    <h3>Displaying the Alignments</h3>
+    <p>
+        Each alignment can be displayed by clicking its Reference ID. The first character in the alignment (an asterisk)
+        represents the Kozak sequence (GCCACC). If it is black, the intact sequence is present in at least one of the reads.
+        If it is red, the Kozak sequence is either not covered by any read or mutated.
+        The last character is an asterisk representing a stop codon. The same color coding applies as with the Kozak sequence.
+        In the alignment itself, the background color represents coverage. Style of the letters represents mutations. Hovering your cursor over any nucleotide will highlight
+        the codon with black and red underlining. If gaps are present in the alignment, black underlining represents the original reading frame and red is the frame after including gaps.
+        A tooltip shows the reference nucleotide in the first row and individual reads in the following row.
+    </p>
+    <h3>Download</h3>
+    <p>
+        The results can be downloaded as an Excel spreadsheet using the Download all button. The first sheet of the file will contain the same information as the results table.
+        The reference IDs are clickable and take you to sheets containing the given alignments.
+        The alignment sheet (named like the trace file, with "Seq" appended) contains a row for both the reference and consensus sequence, as well as each trace sequence.
+        Amino acid translations are provided for each of these. The following sheet (marked by "Mut" appended to the sheet name)
+        lists all the mismatched positions and regions of zero coverage. Position numbers are clickable and contain links
+        to the corresponding position in the alignment.
+        <br>
+        If desired, each alignment can be downloaded as a separate spreadsheet using the button in the results table row.
+    </p>
+<br>
+<br>
+<br>
+<br>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+{% endblock %}

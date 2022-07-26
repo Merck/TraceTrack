@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+{% block title %}Trace file alignment{% endblock %}
+{% block nav_index %}active{% endblock %}
+{% block head %}
+    {{ super() }}
+
+
+{% endblock %}
+{% block container %}
+        <form id="upload" method="post" action="/settings/{{ task_id }}" enctype="multipart/form-data" >
+
+            <h4 class="badged-header"><span class="badge badge-primary">3</span>Alignment Settings</h4>
+            <div class="form-row justify-content-md-center">
+                <div class="form-group col-sm-4 ">
+
+                    <div id="histogram1"></div>
+                    <input type="range" class="custom-range" name="threshold" value="{{ threshold }}" min="0" max="100" step="1"
+                        id="input_threshold" aria-describedby="help_threshold">
+                    <label for="input_threshold">Global quality score: <span id="input_thresholdValue"></span></label>
+                    <p class="text-secondary small">Ignore bases with Phred score under given threshold</p>
+                </div>
+                <div class="form-group col-sm-4">
+                    <div id="histogram2"></div>
+                    <input type="range" class="custom-range" name="end_threshold" value="{{ end_threshold }}" min="0" max="100" step="1"
+                        id="input_end_threshold" aria-describedby="help_threshold">
+                    <label for="input_end_threshold">
+                        End trimming quality score: <span id="input_end_thresholdValue"></span>
+                    </label>
+                    <p class="text-secondary small">Trim each end of sequence until reaching three consecutive bases over given threshold</p>
+                </div>
+            </div>
+            <br>
+            <div class="form-row">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" value="separate" id="separate" name="separate"
+                        {{ 'checked' if separate else '' }}>
+                    <label class="form-check-label" for="separate">Align each trace file separately</label>
+                </div>
+            </div>
+            <br>
+            <div class="form-row">
+                <h4 class="badged-header"><span class="badge badge-primary">4</span>Reference Assignment</h4>
+                {% for trace_key, trace in ref_assignment.items() %}
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend" >
+                            <label class="input-group-text"  for="ref_{{ trace_key }}" style="width:300px;" title="{{ trace.name }}" data-toggle="tooltip">{{ trace.name }}</label>
+                        </div>
+                        <select class="custom-select" id="dir_{{ trace_key }}" name="dir_for_{{ trace_key }}" >
+                            <option selected>{{ trace.r_f }}</option>
+                                {% for other_dir in ["Rev", "Fwd"] if other_dir != trace.r_f %}
+                                    <option >{{ other_dir }}</option>
+                                {% endfor %}
+                        </select>
+                        <select class="custom-select" id="ref_{{ trace_key }}" name="ref_for_{{ trace_key }}">
+                            <option selected>{{ trace.ref }}</option>
+                                {% for other_ref in references[trace_key] %}
+                                    <option>{{ other_ref }}</option>
+                                {% endfor %}
+                        </select>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <div class="btn-group" role="group">
+                    <input type="submit" name="submit" class="btn btn-primary btn-lg" value="Submit">
+                </div>
+            </div>
+
+
+        </form>
+
+<div style="height: 200px;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+    // set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 30, left: 5},
+    width = document.getElementById('input_threshold').getBoundingClientRect().width - margin.left - margin.right,
+    height = 120 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select('#histogram1')
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+
+// get the data
+var data = {{ histogram | safe }};
+
+// X axis: scale and draw:
+var x = d3.scaleLinear()
+  .range([0, width])
+//  .domain([0, data.length])
+  .domain([0, 100])
+
+var ticks = x.ticks(100);
+
+svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+
+// Y axis: scale and draw:
+var y = d3.scaleLinear()
+  .range([height, 0]);
+
+var yAxis = d3.axisLeft(y)
+
+y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+var barWidth = width / data.length
+
+// append the bar rectangles to the svg element
+svg.selectAll(".bar")
+  .data(data)
+  .enter()
+  .append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d, i) { return x(d.bin); })
+    .attr("y", function(d) { return y(d.value); })
+
+    //.attr("transform", function(d, i) { return "translate(" + x(d.bin) + "," + y(d.value) + ")"; })
+    .attr("width", barWidth)
+    .attr("height", function(d) { return height - y(d.value); })
+    .style("fill", "#69b3a2")
+
+var vertical1 = svg.append("line")
+        .attr("x1", x({{ threshold }}) )
+        .attr("x2", x({{ threshold }}) )
+        .attr("y1", y(0))
+        .attr("y2", y(d3.max(data, function(d) { return d.value; })))
+        .attr("stroke", "red")
+        .attr("stroke-dasharray", "4")
+
+// same thing for second column
+var svg2 = d3.select('#histogram2')
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// X axis for right column
+var x2 = d3.scaleLinear()
+  .range([0, width])
+//  .domain([0, data.length])
+  .domain([0, 100])
+
+
+var ticks2 = x2.ticks(100);
+
+svg2.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+// append the bar rectangles to the svg element
+svg2.selectAll(".bar")
+  .data(data)
+  .enter()
+  .append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d, i) { return x(d.bin); })
+    .attr("y", function(d) { return y(d.value); })
+
+    //.attr("transform", function(d, i) { return "translate(" + x(d.bin) + "," + y(d.value) + ")"; })
+    .attr("width", barWidth)
+    .attr("height", function(d) { return height - y(d.value); })
+    .style("fill", "#69b3a2")
+
+var vertical2 = svg2.append("line")
+        .attr("x1", x({{ end_threshold }}) )
+        .attr("x2", x({{ end_threshold }}) )
+        .attr("y1", y(0))
+        .attr("y2", y(d3.max(data, function(d) { return d.value; })))
+        .attr("stroke", "red")
+        .attr("stroke-dasharray", "4")
+
+d3.select("#input_threshold").on("input", function(){
+        vertical1.attr("x1", x(this.value))
+        vertical1.attr("x2", x(this.value))
+    })
+
+d3.select("#input_end_threshold").on("input", function(){
+        vertical2.attr("x1", x(this.value))
+        vertical2.attr("x2", x(this.value))
+    })
+
+</script>
+    {{ super() }}
+{% endblock %}

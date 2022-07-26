@@ -1,0 +1,23 @@
+---
+channels:
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - python >= 3.7,<3.8
+  - pip
+  - pandas
+  - biopython >= 1.79
+  - flask >= 2.1.2
+  - openpyxl
+  - xlsxwriter
+  - pytest
+  - pytest-mock
+  - flower
+  - celery >= 4.4.2
+  - clustalo
+  - pyyaml >= 5.4
+  - gunicorn
+  - parasail-python
+  - click
+  - redis-py

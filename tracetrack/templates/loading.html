@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}Processing...{% endblock %}
+{% block nav_oas %}active{% endblock %}
+{% block flash %}{% endblock %}
+{% block container %}
+    <div class="row">
+        <div >
+            <h1>Processing
+            <svg width="51px" height="50px" viewBox="0 0 61 50">
+
+                <rect x="10" y="0" width="12" height="50" fill="#007bff">
+                    <animate attributeName="height" values="50;10;50" begin="0s" dur="1s" repeatCount="indefinite" />
+                    <animate attributeName="y" values="0;20;0" begin="0s" dur="1s" repeatCount="indefinite" />
+                </rect>
+
+                <rect x="29" y="0" width="12" height="50" fill="#007bff">
+                    <animate attributeName="height" values="50;10;50" begin="0.2s" dur="1s" repeatCount="indefinite" />
+                    <animate attributeName="y" values="0;20;0" begin="0.2s" dur="1s" repeatCount="indefinite" />
+                </rect>
+
+                <rect x="48" y="0" width="12" height="50" fill="#007bff">
+                    <animate attributeName="height" values="50;10;50" begin="0.4s" dur="1s" repeatCount="indefinite" />
+                    <animate attributeName="y" values="0;20;0" begin="0.4s" dur="1s" repeatCount="indefinite" />
+                </rect>
+
+            </svg></h1>
+        </div>
+
+    </div>
+    <div class="row">
+            <p>
+                {{ text }}
+            </p>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    setTimeout(function(){location.reload()}, 2000)
+    </script>
+{% endblock %}

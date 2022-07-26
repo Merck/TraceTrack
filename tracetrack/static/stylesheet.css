@@ -1,0 +1,457 @@
+.alignment {
+  color: #212529;
+  font-size: 0;
+  cursor: default;
+}
+
+h2 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+#result {
+    padding-bottom: 50px;
+}
+
+#results_table.grouped-by-ref .row-same-reference td {
+    border-top: 0;
+}
+
+#results_table.grouped-by-ref .row-same-reference .ref-button {
+    visibility: hidden;
+}
+
+#results_table td {
+    vertical-align: middle;
+}
+
+#results_table_wrapper {
+    margin-top: 20px;
+}
+
+/* Hide results table until it loads using DataTable */
+#results_table {
+    display: none;
+}
+#results_table_wrapper #results_table {
+    display: table;
+}
+
+#results_table tr:hover {
+  background-color: #ffffff;
+}
+
+.population-best {
+    font-weight: bold;
+}
+
+.ref-button {
+    min-width: 60px;
+}
+
+.no_mut {
+  color: #000000;
+}
+
+.silent_mut {
+  color: #0070fa;
+  font-weight:bold;
+  fill: #0070fa;
+}
+
+.mis_mut {
+  color: #fc5e42;
+  font-weight:bold;
+  fill: #fc5e42;
+}
+
+.nons_mut {
+  color: #6d23ad;
+  font-weight:bold;
+  fill: #6d23ad;
+}
+
+.frameshift {
+  color: #fcbd28;
+}
+
+.mixed_peak {
+  font-weight:bold;
+  font-style: italic;
+  text-decoration: underline;
+}
+
+.default-feature {
+  opacity: 0.6;
+}
+
+.cds {
+  opacity: 1;
+}
+
+.alignment .residue {
+  font-size: 15px;
+  display: inline-block;
+  font-family: monospace;
+  height: 23px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.alignment .residue[data-position] {
+  cursor: pointer;
+}
+
+.residue {
+    position: relative;
+}
+.residue:hover {
+    font-weight: bold;
+}
+
+.codon-new.cds {
+    border-bottom: 2px solid red;
+}
+
+.codon-ref.cds:after {
+    content: "";
+    position: absolute;
+    top: 19px;
+    left: 0px;
+    height: 2px;
+    width: 100%;
+    display: inline-block;
+    background: black;
+}
+
+.legend {
+  border-radius: 8px;
+  padding: 0px 6px;
+  margin: 2px 0;
+  min-width: 20px;
+  text-align: center;
+  display: inline-block;
+  background-color: #f0f0f0;
+}
+
+.cov0 {
+  background-color: #ffffff;
+}
+
+.cov1 {
+  background-color: #d2ebfb;
+}
+
+.cov2 {
+  background-color: #b0d1d5;
+}
+
+.cov3 {
+  background-color: #86b1a5;
+}
+
+.cov4 {
+  background-color: #669980;
+}
+
+#navPlot rect {
+    cursor: pointer;
+}
+
+#navPlot rect.cov0 {
+  fill: #f3f3f3;
+}
+
+#navPlot rect.cov1 {
+  fill: #d2ebfb;
+}
+
+#navPlot rect.cov2 {
+  fill: #b0d1d5;
+}
+
+#navPlot rect.cov3 {
+  fill: #86b1a5;
+}
+
+#navPlot rect.cov4 {
+  fill: #669980;
+}
+
+#navPlot rect.silent_mut {
+  fill: #073cb5;
+}
+
+#navPlot rect.mis_mut {
+  fill: #f55442;
+}
+
+#navPlot rect.nons_mut {
+  fill: #fd1eff;
+}
+
+.navArrow {
+    pointer-events:none;
+}
+
+.navArrow text {
+    text-anchor: middle;
+    font-size: 12px;
+    fill: #666666;
+    pointer-events:none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.codon-ref.cov0 {
+  background-color: #f0f0f0;
+}
+
+.codon-ref.cov1 {
+  background-color: #b6e0f0;
+}
+
+.codon-ref.cov2 {
+  background-color: #b0c0f0;
+}
+
+.codon-ref.cov3 {
+  background-color: #d0b0f0;
+}
+
+.codon-ref.cov4 {
+  background-color: #f0b0d6;
+}
+
+
+.color-mutation-none {
+  background-color: #baffbb !important;
+}
+
+.color-mutation-silent {
+  background-color: #a2cafc !important;
+}
+
+.color-mutation-missense {
+  background-color: #f5a590 !important;
+}
+
+.color-mutation-nonsense {
+  background-color: #c19dfa !important;
+}
+
+.color-mutation-frameshift {
+  background-color: #f5d99a !important;
+}
+
+.population-input:not(:nth-child(3n+1)) {
+    padding-left: 40px;
+}
+
+.population-input:not(:last-child) {
+    border-right: 1px solid #ddd;
+}
+
+.population-input .form-group {
+    padding: 0 30px 0 0;
+}
+
+.badged-header {
+    position: relative;
+}
+
+.badged-header .badge {
+    position: absolute;
+    top: 1px;
+    left: -36px;
+    width: 27px;
+}
+
+.form-group .badge {
+    margin-top: 4px;
+}
+
+.label-required:after {
+    content: " *";
+    color: red;
+}
+
+td.details-control {
+    background: url('../resources/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('../resources/details_close.png') no-repeat center center;
+}
+td.col-file-names {
+    font-size: 90%
+}
+
+.tick rect {
+    fill: #dddddd;
+    cursor: pointer;
+}
+.refTick rect {
+    opacity: 0.9;
+}
+.refTick rect:hover {
+    opacity: 1;
+}
+
+.refTick text {
+    text-anchor: middle;
+    font-size: 13px;
+    pointer-events: none;
+}
+.refTick text.refPosition {
+    font-size: 12px;
+    fill: #666666;
+    font-weight: normal;
+}
+.refTick text.refTranslation {
+    font-size: 12px;
+    fill: #666666;
+    font-weight: normal;
+}
+
+.refTick text, .traceTick text {
+    pointer-events: none;
+}
+
+.line_G {
+    fill: none;
+    stroke: blue;
+    stroke-width: 3;
+}
+.tick_G text {
+    fill: white;
+    font-weight: bold;
+}
+.tick_G rect {
+    fill: blue;
+}
+
+.line_A {
+    fill: none;
+    stroke: #ee0011;
+    stroke-width: 3;
+}
+.tick_A text {
+    fill: white;
+    font-weight: bold;
+}
+.tick_A rect {
+    fill: #ee0011;
+}
+
+.line_T {
+    fill: none;
+    stroke: green;
+    stroke-width: 3;
+}
+.tick_T text {
+    fill: white;
+    font-weight: bold;
+}
+.tick_T rect {
+    fill: green;
+}
+
+.line_C {
+    fill: none;
+    stroke: #ffdd00;
+    stroke-width: 3;
+}
+.tick_C text {
+    fill: black;
+    font-weight: bold;
+}
+.tick_C rect {
+    fill: #ffdd00;
+}
+
+.tick_N rect {
+    fill: #a6a6a6;
+}
+
+.tick_uni rect {
+    fill: #d1d1d1;
+}
+
+
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.x.axis .tick {
+    font-size: 12px;
+}
+
+#refPlot {
+   position: relative;
+   overflow: hidden;
+}
+
+#refPlot:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 200px;
+    top: -50px;
+    left: 0px;
+    -moz-box-shadow:    inset 0 0 75px 20px white;
+    -webkit-box-shadow: inset 0 0 75px 20px white;
+    box-shadow:         inset 0 0 75px 20px white;
+    pointer-events: none;
+}
+
+#traceNavigation {
+    margin-left: 20px;
+}
+
+#traceRefTitle {
+    cursor: default;
+}
+
+.plotTitle {
+    font-size: 14px;
+    text-anchor: middle;
+}
+
+@media print {
+  #traceModal .modal-dialog {
+    position:absolute;
+    left:0;
+    top:0;
+    max-width: 100%;
+    width: 100%;
+  }
+  .modal-backdrop {
+    background-color: white !important;
+    opacity: 1 !important;
+  }
+}
+#collapseButton {
+  margin-right: 15px;
+}
+
+.cut-text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .modal-xl {
+    width: 90%;
+   max-width:830px;
+  }
+}
+.wider-gutter > [class*='col-'] {
+    padding-right:35px;
+    padding-left:35px;
+}

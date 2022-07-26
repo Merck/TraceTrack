@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block title %}Trace file alignment{% endblock %}
+{% block nav_index %}active{% endblock %}
+{% block head %}
+    {{ super() }}
+
+
+{% endblock %}
+{% block container %}
+
+
+    <div class="row">
+        <div class="col-sm">
+            <form id="upload" method="post" action="/input" enctype="multipart/form-data">
+                <div class="form-check text-right" >
+                    <input type="checkbox" class="form-check-input" value="Use example" id="example" name="exampleButton">
+                    <label class="form-check-label" for="example">Use example </label>
+                </div>
+                <div class="file-upload">
+                    <h4 class="badged-header"><span class="badge badge-primary">1</span>Trace Files</h4>
+                    <div class="row" id="populationInputs">
+                        {% for i in range(1, 2) %}
+                            <div class="col-md-4 population-input" id="populationInput{{ i }}">
+                                <div class="form-group">
+                                    <label class="label-required">Group name</label>
+                                    <input class="form-control form-control-sm population-name" name="population{{ i }}" value="Group {{ i }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-required">Trace files</label>
+                                    <input class="form-control-file population-file" type="file" name="tracefile{{ i }}[]"
+                                           id="tracefile{{ i }}" multiple="" autocomplete="off"
+                                           accept=".ab1,.zip"
+                                           required>
+                                    <small class="form-text text-muted">Multiple .zip or .ab1 files</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <h4 class="badged-header"><span class="badge badge-primary">2</span>References</h4>
+                    <p>
+                        Your traces will be aligned to the best matching reference sequence.
+                    </p>
+                    <div class="form-group">
+                        <label for="reffile" class="label-required">Reference sequences (coding region)</label>
+                        <input class="form-control-file" type="file" accept=".xlsx,.csv,.fasta,.fa,.gb,.gbk,.genbank"
+                               name="reference" autocomplete="off" required id="reffile">
+                        <small class="form-text text-muted">Single FASTA, GenBank, CSV or Excel file with <em>RefID</em> and <em>Sequence</em> columns</small>
+                    </div>
+                </div>
+                <div class="example-used" style="display: none;">
+                    <h4>Using example files</h4>
+                </div>
+
+                <br>
+                <div class="form-group">
+                    <div class="btn-group" role="group">
+                        <input type="submit" name="submit" class="btn btn-primary btn-lg" value="Submit">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(function(){
+            $('.example-used').hide()
+            var populationInputsWrapper = $('#populationInputs')
+            var populationIndex = populationInputsWrapper.children().length
+
+            // Add new population column when last available population is filled in
+            populationInputsWrapper.on('change', '.population-file', function(){
+              // Enable all inputs
+              populationInputsWrapper.find('input:disabled').removeAttr('disabled')
+
+              // Add new column if last available column is filled in
+              if ($(this).is('.population-input:last-child input')) {
+                  var cloned = $('#populationInput1').clone()
+                  cloned.removeAttr('required')
+                  populationIndex += 1
+                  cloned.prop('id', 'populationInput'+populationIndex)
+                  var name = cloned.find('.population-name')
+                  name.removeAttr('required')
+                  name.val('Group '+populationIndex).prop('name', 'population'+populationIndex)
+                  var file = cloned.find('.population-file')
+                  file.removeAttr('required')
+                  file.val(null).prop('name', 'tracefile'+populationIndex+'[]')
+                  cloned.find('.label-required').removeClass('label-required')
+                  populationInputsWrapper.append(cloned)
+              }
+            })
+
+            $('#example').change(function() {
+                if ($(this).prop('checked')){
+                    $('.file-upload').hide();
+                    $("#tracefile1,#reffile").removeAttr('required');
+                    $('.example-used').show();
+                } else {
+                    $('.example-used').hide();
+                    $('.file-upload').show();
+                    $("#tracefile1,#reffile").addAttr('required');
+                }
+            });
+
+
+
+        } );
+
+    </script>
+{% endblock %}
+
+
+
