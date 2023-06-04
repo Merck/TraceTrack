@@ -14,6 +14,10 @@ MUTATION_TYPE_FRAMESHIFT = "frameshift"
 
 
 class Alignment:
+    """
+    Class for storing results of an alignment. Contains both reference and aligned sequences, mutations and additional
+    metrics like coverage.
+    """
     def __init__(self, aligned_reference: AlignedReference, aligned_traces: List[AlignedTrace], population: str = None):
         """
         :param aligned_reference: aligned reference record
@@ -159,9 +163,11 @@ class Alignment:
         return zeros
 
     def get_codon_reference(self, pos: int) -> Optional[Seq]:
+        """Get the codon at specfied position in the reference sequence."""
         return self.get_codon(pos, False)
 
     def get_codon_mutated(self, pos: int) -> Optional[Seq]:
+        """Get the codon at specfied position in the mutated sequence."""
         return self.get_codon(pos, True)
 
     def get_codon(self, pos: int, mutated: bool) -> Optional[Seq]:
@@ -194,6 +200,10 @@ class Alignment:
 
     # might be a place to use lru_cache?
     def is_same_aminoacid(self, pos: int) -> bool:
+        """
+        Return bool value specifying whether the reference and mutated sequence code for the same amino acid
+        at the given position.
+        """
         try:
             AA1 = self.translate(pos, False)
             AA2 = self.translate(pos, True)
@@ -203,12 +213,18 @@ class Alignment:
         return AA1 == AA2
 
     def translate_reference(self, pos: int) -> str:
+        """Translate the DNA codon at the given position in the reference sequence to an amino acid."""
         return self.translate(pos, False)
 
     def translate_mutated(self, pos: int) -> str:
+        """Translate the DNA codon at the given position in the mutated sequence to an amino acid."""
         return self.translate(pos, True)
 
     def translate(self, pos: int, mutated: bool) -> str:
+        """
+        Translate the DNA codon at the given position in the sequence to an amino acid. Ignore question marks in the
+        sequence (unknown insertions).
+        """
         codon = self.get_codon(pos, mutated)
         if codon is None:
             return ""
@@ -261,6 +277,9 @@ class Alignment:
         return [aligned_trace.record.id for aligned_trace in self.aligned_traces]
 
     def format_position(self, pos):
+        """
+        Return a format string which is used in the html output for a given base.
+        """
         feat = self.aligned_reference.get_feature_for_pos(self.positions[pos].pos_ref)
         format_str = feat.get_format()
 
@@ -270,6 +289,9 @@ class Alignment:
         return format_str + " " + mutation
 
     def get_codon_num(self, pos: int, mutated: bool) -> int:
+        """
+        Get the position number of the codon at the given sequence position.
+        """
         ref_pos = self.positions[pos].pos_ref
         feat = self.aligned_reference.get_feature_for_pos(ref_pos)
         ref_offset, mut_offset = self.get_offset(feat.location.start)
@@ -278,6 +300,7 @@ class Alignment:
         return (self.positions[pos].pos_ref - ref_offset) // 3
 
     def get_offset(self, start):
+        """Get the position of the start of coding sequence in the alignment."""
         cds_start_in_mut = self.aligned_reference.ref_to_mut[start]
         mut_offset = self.positions[cds_start_in_mut].pos_mutated
         return start, mut_offset
@@ -302,6 +325,9 @@ class Alignment:
         return str(self.positions[i].pos_ref + 1) + letter_code
 
     def get_translation(self):
+        """
+        Produce complete translation to amino acids from alignment. Non-coding regions are translated to spaces.
+        """
         codon_numbers_ref = [self.get_codon_num(i, False) for i in range(len(self.positions))]
         coding = [self.aligned_reference.get_feature_for_pos(i).is_coding() for i in range(len(self.positions))]
         translation = []

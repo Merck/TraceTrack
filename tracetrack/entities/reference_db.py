@@ -13,6 +13,9 @@ import pandas as pd
 
 
 def read_csv(filename):
+    """
+    Read a reference sheet in csv format
+    """
     with open(filename, 'r') as f:
         csv_reader = reader(f)
         header = next(csv_reader)
@@ -21,6 +24,9 @@ def read_csv(filename):
 
 
 def read_xlsx(filename):
+    """
+    Read a reference sheet in xlsx format
+    """
     table = pd.read_excel(filename, dtype=str, engine='openpyxl')
     header = table.columns[:2]
     records = [Record.read_from_csv(row) for i, row in table.iterrows() if row[0] and not pd.isna(row[0])]
@@ -29,18 +35,28 @@ def read_xlsx(filename):
 
 
 def read_fasta(filename):
+    """
+    Read reference sheet in fasta format
+    """
     iterator = SeqIO.parse(filename, "fasta")
     records = [Record.read_from_fasta(seq_record) for seq_record in iterator]
     return records
 
 
 def read_gb(filename):
+    """
+    Read reference sheet in GenBank formati
+    """
     gb_records = SeqIO.parse(open(filename, "r"), "genbank")
     records = [Record.read_from_genbank(gb_record) for gb_record in gb_records]
     return records
 
 
 class ReferenceDb:
+    """
+    Class for storing reference sequences loaded from reference sheet provided by user.
+    Each reference sequence is stored as a Record object.
+    """
     def __init__(self, records):
         self.sequences = records
 
@@ -51,7 +67,7 @@ class ReferenceDb:
     @classmethod
     def read_file(cls, filename) -> 'ReferenceDb':
         """
-        Read a DataFrame from an .xlsx, .csv or fasta file. Return ReferenceDb object.
+        Read a DataFrame from an .xlsx, .csv, fasta or .gbk file. Return ReferenceDb object.
         :param filename: str
         :return: ReferenceDb
         """
