@@ -84,19 +84,20 @@ class Record:
 
 
 class TraceSeqRecord(Record):
-    def __init__(self, seq, quality, id=None, traces=None, base_locations=None, reference=None, reverse: bool = None):
+    def __init__(self, seq, quality, mixed_fraction, id=None, traces=None, base_locations=None, reference=None,
+                 reverse: bool = None):
         assert not isinstance(seq, str), 'Sequence should be a Seq object'
         super().__init__(seq, id)
         self.traces = traces
         self.base_locations = base_locations
         self.quality = quality
-        self.mixed_peaks = self.find_mixed_peaks()
+        self.mixed_peaks = self.find_mixed_peaks(mixed_fraction)
         # should the original sequence be stored because of finding mixed peaks? Or just ignore al N's...
         self.reference = reference
         self.reverse = reverse
 
     @classmethod
-    def read(cls, path):
+    def read(cls, path, mixed_fraction):
         """
         Take an .ab1 file, return TraceSeqRecord object. Raise exception when the file name format is wrong.
         :param path: str
@@ -116,8 +117,8 @@ class TraceSeqRecord(Record):
         # get locations in trace array for all bases
         base_locations = list(record.annotations['abif_raw']["PLOC1"])
 
-        return cls(record.seq, record.letter_annotations['phred_quality'], id=name, traces=traces,
-                   base_locations=base_locations)
+        return cls(record.seq, record.letter_annotations['phred_quality'], mixed_fraction=mixed_fraction, id=name,
+                   traces=traces, base_locations=base_locations)
 
     def filter_sequence_by_quality(self, threshold, end_threshold):
         """

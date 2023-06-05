@@ -132,6 +132,7 @@ def trace_get(task_id, alignment_index):
 def input_post():
     # loads input files to a temporary directory saved in variable tmp
     example = 'exampleButton' in request.form
+    f = 'mixed_fraction' in request.form
 
     # check if the post request has the file part
     if (not example and 'tracefile1[]' not in request.files) or 'reference' not in request.files:
@@ -144,7 +145,7 @@ def input_post():
         db = ReferenceDb.read_file(reffile)
 
         example_tracefiles = os.path.join(app.root_path, "../data/example/traces")
-        seq_lists = [unzip_and_get_sequences(example_tracefiles)]
+        seq_lists = [unzip_and_get_sequences(example_tracefiles, mixed_fraction=f)]
         population_names = ['Example']
     else:
         try:
@@ -174,7 +175,7 @@ def input_post():
             name = request.form['population{}'.format(index)]
             index += 1
             # get list of lists of TraceSeqRecord objects
-            seq_lists.append(unzip_and_get_sequences(tmpdir.name))
+            seq_lists.append(unzip_and_get_sequences(tmpdir.name, mixed_fraction=f))
             tmpdir.cleanup()
             population_names.append(name)
 

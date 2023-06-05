@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = {'zip', 'ab1'}
 ALLOWED_REF_EXTENSIONS = {'csv', 'xlsx', 'fasta', 'fa', 'gb', 'gbk', 'genbank'}
 
 
-def unzip_and_get_sequences(dir: str) -> List[TraceSeqRecord]:
+def unzip_and_get_sequences(dir: str, mixed_fraction: float) -> List[TraceSeqRecord]:
     """
     Process all files in given directory, return list of TraceSeqRecord objects.
     :param dir: str
@@ -31,7 +31,7 @@ def unzip_and_get_sequences(dir: str) -> List[TraceSeqRecord]:
     seqlist = []
     for f in filelist:
         try:
-            rec = TraceSeqRecord.read(f)
+            rec = TraceSeqRecord.read(f, mixed_fraction)
             seqlist.append(rec)
         except ValueError as error:
             flash(str(error))
