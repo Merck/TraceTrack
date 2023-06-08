@@ -239,16 +239,14 @@ def alignment_settings_post(task_id, settings_task=None):
     end_threshold = int(request.form['end_threshold'])
     separate = 'separate' in request.form
     fraction = request.form['fraction']
-    print("The value of fraction is:")
-    print(fraction)
     messages = []
     try:
         fraction_f = float(fraction)
         if fraction_f <= 0 or fraction_f > 1:
-            messages.append("The number provided for 'f' is outside of the [0, 1] interval. Using default threshold 0.15.")
+            messages.append(f"The number provided for 'f' ({fraction}) is outside of the [0, 1] interval. Using default threshold 0.15.")
             fraction_f = 0.15
     except ValueError:
-        messages.append("The input for 'f' could not be converted to a number. Using default threshold 0.15.")
+        messages.append(f"The input for 'f' ({fraction}) could not be converted to a number. Using default threshold 0.15.")
         fraction_f = 0.15
 
     result = scheduler.get_result(task_id)
