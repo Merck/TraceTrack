@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = {'zip', 'ab1'}
 ALLOWED_REF_EXTENSIONS = {'csv', 'xlsx', 'fasta', 'fa', 'gb', 'gbk', 'genbank'}
 
 
-def unzip_and_get_sequences(dir: str, mixed_fraction: float) -> List[TraceSeqRecord]:
+def unzip_and_get_sequences(dir: str) -> List[TraceSeqRecord]:
     """
     Process all files in given directory, return list of TraceSeqRecord objects.
     :param dir: str
@@ -31,7 +31,7 @@ def unzip_and_get_sequences(dir: str, mixed_fraction: float) -> List[TraceSeqRec
     seqlist = []
     for f in filelist:
         try:
-            rec = TraceSeqRecord.read(f, mixed_fraction)
+            rec = TraceSeqRecord.read(f)
             seqlist.append(rec)
         except ValueError as error:
             flash(str(error))
@@ -586,13 +586,14 @@ def hash_trace_name(pop_number, seq_number):
     return f"{pop_number}_{seq_number}"
 
 
-def schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold):
+def schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold, messages):
     settings = Settings(threshold, end_threshold, separate)
     inputs = []
     inputs_sorted = []
     for population_seqs, population_name in zip(sequences, population_names):
         new_seqlist = []
-        warnings = []
+        warnings = [] + messages
+        messages = []
         for record in population_seqs:
             new_record = record.filter_sequence_by_quality(threshold, end_threshold)
             if new_record.has_base_above_threshold():

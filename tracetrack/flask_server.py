@@ -132,7 +132,6 @@ def trace_get(task_id, alignment_index):
 def input_post():
     # loads input files to a temporary directory saved in variable tmp
     example = 'exampleButton' in request.form
-    f = 'mixed_fraction' in request.form
 
     # check if the post request has the file part
     if (not example and 'tracefile1[]' not in request.files) or 'reference' not in request.files:
@@ -145,7 +144,7 @@ def input_post():
         db = ReferenceDb.read_file(reffile)
 
         example_tracefiles = os.path.join(app.root_path, "../data/example/traces")
-        seq_lists = [unzip_and_get_sequences(example_tracefiles, mixed_fraction=f)]
+        seq_lists = [unzip_and_get_sequences(example_tracefiles)]
         population_names = ['Example']
     else:
         try:
@@ -175,7 +174,7 @@ def input_post():
             name = request.form['population{}'.format(index)]
             index += 1
             # get list of lists of TraceSeqRecord objects
-            seq_lists.append(unzip_and_get_sequences(tmpdir.name, mixed_fraction=f))
+            seq_lists.append(unzip_and_get_sequences(tmpdir.name))
             tmpdir.cleanup()
             population_names.append(name)
 
@@ -239,6 +238,18 @@ def alignment_settings_post(task_id, settings_task=None):
     threshold = int(request.form['threshold'])
     end_threshold = int(request.form['end_threshold'])
     separate = 'separate' in request.form
+    fraction = request.form['fraction']
+    print("The value of fraction is:")
+    print(fraction)
+    messages = []
+    try:
+        fraction_f = float(fraction)
+        if fraction_f <= 0 or fraction_f > 1:
+            messages.append("The number provided for 'f' is outside of the [0, 1] interval. Using default threshold 0.15.")
+            fraction_f = 0.15
+    except ValueError:
+        messages.append("The input for 'f' could not be converted to a number. Using default threshold 0.15.")
+        fraction_f = 0.15
 
     result = scheduler.get_result(task_id)
     if isinstance(result, Exception):
@@ -257,8 +268,10 @@ def alignment_settings_post(task_id, settings_task=None):
             direction = str(request.form[f'dir_for_{seq_id}'])
             dir_flag = True if direction == "Rev" else False
             seq.flag_as_reverse(dir_flag)
+            if fraction_f != 0.15:
+                seq.re_find_mixed_peaks(fraction_f)
 
-    new_id = schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold)
+    new_id = schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold, messages)
     return redirect("/results/" + task_id + "/" + new_id)
 
 
