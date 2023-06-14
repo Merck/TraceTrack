@@ -84,14 +84,15 @@ class Record:
 
 
 class TraceSeqRecord(Record):
-    def __init__(self, seq, quality, id=None, traces=None, base_locations=None, reference=None,
+    def __init__(self, seq, quality, f, id=None, traces=None, base_locations=None, reference=None,
                  reverse: bool = None):
         assert not isinstance(seq, str), 'Sequence should be a Seq object'
         super().__init__(seq, id)
         self.traces = traces
         self.base_locations = base_locations
         self.quality = quality
-        self.mixed_peaks = self.find_mixed_peaks()
+        self.f = f
+        self.mixed_peaks = self.find_mixed_peaks(f)
         # should the original sequence be stored because of finding mixed peaks? Or just ignore al N's...
         self.reference = reference
         self.reverse = reverse
@@ -117,7 +118,7 @@ class TraceSeqRecord(Record):
         # get locations in trace array for all bases
         base_locations = list(record.annotations['abif_raw']["PLOC1"])
 
-        return cls(record.seq, record.letter_annotations['phred_quality'], id=name,
+        return cls(record.seq, record.letter_annotations['phred_quality'], f=0.15, id=name,
                    traces=traces, base_locations=base_locations)
 
     def filter_sequence_by_quality(self, threshold, end_threshold):
@@ -136,7 +137,8 @@ class TraceSeqRecord(Record):
             traces=self.traces,
             base_locations=self.base_locations,
             reference=self.reference,
-            reverse=self.reverse
+            reverse=self.reverse,
+            f=self.f
         )
 
     def reverse_complement(self, **kwargs):
@@ -148,7 +150,8 @@ class TraceSeqRecord(Record):
             traces={str(Seq(base).reverse_complement()): values[::-1] for base, values in self.traces.items()},
             base_locations=[num_locations - i - 1 for i in self.base_locations[::-1]],
             reverse=False,
-            reference=self.reference
+            reference=self.reference,
+            f=self.f
         )
 
     def has_base_above_threshold(self):
@@ -201,7 +204,7 @@ class TraceSeqRecord(Record):
             end = min(pos + width - 2, len(self.traces['A']))
         return start, end
 
-    def find_mixed_peaks(self, fraction: float = 0.15):
+    def find_mixed_peaks(self, fraction: float):
         """
         For each position of the sequence, determine if the peak in the chromatogram is "mixed".
         Disregard mixed signals in regions with low signal to noise ratio (generally bad quality region)
@@ -238,6 +241,7 @@ class TraceSeqRecord(Record):
     def re_find_mixed_peaks(self, f):
         """Function to re-calculate mixed peaks after object has been constructed"""
         self.mixed_peaks = self.find_mixed_peaks(f)
+        self.f = f
 
     def signal_to_noise(self, i: int):
         """

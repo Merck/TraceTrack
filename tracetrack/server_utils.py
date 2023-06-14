@@ -558,13 +558,18 @@ def get_color_bin(value, thresholds):
 
 
 def trace_record_dict(trace: AlignedTrace) -> dict:
-    return {
+    d = {
         'sequence': str(trace.record.seq),
         'traces': [{'base': base, 'values': trace.record.traces[base]} for base in 'GATC'],
         'locations': trace.record.base_locations,
         'alignedPositions': trace.get_aligned_positions(),
         'id': trace.record.id
     }
+    last = max(0, d["locations"][d["alignedPositions"][0]] - 112)  # 112 points to the left of start of reference are still shown
+    for i in range(last):
+        for tr in d["traces"]:
+            tr["values"][i] = 0
+    return d
 
 
 def position_dict(alignment: Alignment, position: int) -> dict:

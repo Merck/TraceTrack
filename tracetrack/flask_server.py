@@ -266,8 +266,7 @@ def alignment_settings_post(task_id, settings_task=None):
             direction = str(request.form[f'dir_for_{seq_id}'])
             dir_flag = True if direction == "Rev" else False
             seq.flag_as_reverse(dir_flag)
-            if fraction_f != 0.15:
-                seq.re_find_mixed_peaks(fraction_f)
+            seq.re_find_mixed_peaks(fraction_f)
 
     new_id = schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold, messages)
     return redirect("/results/" + task_id + "/" + new_id)
