@@ -215,12 +215,12 @@ class TraceSeqRecord(Record):
         stn = [self.signal_to_noise(i) for i in range(len(self.base_locations))]
         avg_stn = sum(stn) / len(stn)
         mixed_peaks = []
+        threshold = max(25, avg_stn * 1.35)
 
         for i, pos in enumerate(self.base_locations):
             stn_local = stn[i-10:i] + stn[i+1:i+10]
             signal_to_noise = sum(stn_local) / 20
 
-            threshold = max(25, avg_stn * 1.35)
             if signal_to_noise < threshold:
                 continue
                 # bad StN ratio -> disregard potential mixed positions
@@ -231,11 +231,13 @@ class TraceSeqRecord(Record):
             peaks = {base: values[pos] for base, values in self.traces.items()}
             if base != "N":
                 main_peak = peaks[base.upper()]
-                for letter, area in areas.items():
-                    # check for both area and height of peak
-                    if base != letter and area > (areas[base.upper()] * fraction) and peaks[letter] > (main_peak * fraction) \
-                            and self.is_concave(pos, letter):
-                        mixed_peaks.append(i)
+            if base == "N":
+                main_peak = max(peaks.values())
+            for letter, area in areas.items():
+                # check for both area and height of peak
+                if base != letter and area > (areas[base.upper()] * fraction) and peaks[letter] > (main_peak * fraction) \
+                        and self.is_concave(pos, letter):
+                    mixed_peaks.append(i)
         return mixed_peaks
 
     def re_find_mixed_peaks(self, f):
