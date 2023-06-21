@@ -231,8 +231,10 @@ class TraceSeqRecord(Record):
             peaks = {base: values[pos] for base, values in self.traces.items()}
             if base != "N":
                 main_peak = peaks[base.upper()]
-            if base == "N":
+            else:
+                # If the called base is "N", we use the highest peak present as the main peak
                 main_peak = max(peaks.values())
+                base = max(peaks, key=peaks.get)
             for letter, area in areas.items():
                 # check for both area and height of peak
                 if base != letter and area > (areas[base.upper()] * fraction) and peaks[letter] > (main_peak * fraction) \
