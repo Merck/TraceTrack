@@ -144,6 +144,10 @@ Each position of the sequence contained in a trace file is assigned a score of c
 #### End Trimming Score Threshold
 As the quality towards the ends of trace files tends to decrease, both ends of sequences are discarded until three bases in a row pass the trimming threshold. This can also be set by the user and should be higher than the score threshold, otherwise it has no effect.
 
+#### Threshold for calling mixed peaks (*f*)
+The application detects positions, where more than one trace peak is present, resulting in one primary and one or more secondary base calls.
+This threshold specifies the minimal fraction of the area of the primary peak that another peak has to attain in order to be considered a secondary peak.
+
 ### Matching to Reference
 Trace files are matched to reference sequences automatically. TraceTrack first checks if the reference ID is contained in the trace file name, and if no match is found this way, then the reference is chosen by best alignment score after aligning the trace file sequence to all the uploaded reference sequences. The read directionality is determined automatically. Both the reference and the directionality can be changed by the user manually.
 
