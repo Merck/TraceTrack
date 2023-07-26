@@ -106,12 +106,14 @@ class TraceSeqRecord(Record):
     """
     Class for storing information loaded from trace files (.ab1 files).
     """
-    def __init__(self, seq, quality, id=None, traces=None, base_locations=None, reference=None, reverse: bool = None):
+    def __init__(self, seq, quality, f, id=None, traces=None, base_locations=None, reference=None,
+                 reverse: bool = None):
         """
         This constructor is only called by read function below or from other functions starting with an instance, so
         the parameters need not be understood in too much details - reflects structure of a trace file.
         :param seq: Seq object with DNA sequence
         :param quality: list of int representing per base quality
+        :param f: mixed peaks detection threshold
         :param traces: dict containing a list of trace values for each base
         :param base_locations: list of positions (int) on the x axis, where each base is called
         :param reference: reference sequence in the DB, only added after instantiating
@@ -122,7 +124,8 @@ class TraceSeqRecord(Record):
         self.traces = traces
         self.base_locations = base_locations
         self.quality = quality
-        self.mixed_peaks = self.find_mixed_peaks()
+        self.f = f
+        self.mixed_peaks = self.find_mixed_peaks(f)
         # should the original sequence be stored because of finding mixed peaks? Or just ignore al N's...
         self.reference = reference
         self.reverse = reverse
@@ -148,8 +151,8 @@ class TraceSeqRecord(Record):
         # get locations in trace array for all bases
         base_locations = list(record.annotations['abif_raw']["PLOC1"])
 
-        return cls(record.seq, record.letter_annotations['phred_quality'], id=name, traces=traces,
-                   base_locations=base_locations)
+        return cls(record.seq, record.letter_annotations['phred_quality'], f=0.15, id=name,
+                   traces=traces, base_locations=base_locations)
 
     def filter_sequence_by_quality(self, threshold, end_threshold):
         """
@@ -167,7 +170,8 @@ class TraceSeqRecord(Record):
             traces=self.traces,
             base_locations=self.base_locations,
             reference=self.reference,
-            reverse=self.reverse
+            reverse=self.reverse,
+            f=self.f
         )
 
     def reverse_complement(self, **kwargs):
@@ -183,7 +187,8 @@ class TraceSeqRecord(Record):
             traces={str(Seq(base).reverse_complement()): values[::-1] for base, values in self.traces.items()},
             base_locations=[num_locations - i - 1 for i in self.base_locations[::-1]],
             reverse=False,
-            reference=self.reference
+            reference=self.reference,
+            f=self.f
         )
 
     def has_base_above_threshold(self):
@@ -242,7 +247,7 @@ class TraceSeqRecord(Record):
             end = min(pos + width - 2, len(self.traces['A']))
         return start, end
 
-    def find_mixed_peaks(self, fraction: float = 0.15):
+    def find_mixed_peaks(self, fraction: float):
         """
         For each position of the sequence, determine if the peak in the chromatogram is "mixed".
         Disregard mixed signals in regions with low signal to noise ratio (generally bad quality region)
@@ -253,12 +258,12 @@ class TraceSeqRecord(Record):
         stn = [self.signal_to_noise(i) for i in range(len(self.base_locations))]
         avg_stn = sum(stn) / len(stn)
         mixed_peaks = []
+        threshold = max(25, avg_stn * 1.35)
 
         for i, pos in enumerate(self.base_locations):
             stn_local = stn[i-10:i] + stn[i+1:i+10]
             signal_to_noise = sum(stn_local) / 20
 
-            threshold = max(25, avg_stn * 1.35)
             if signal_to_noise < threshold:
                 continue
                 # bad StN ratio -> disregard potential mixed positions
@@ -269,12 +274,21 @@ class TraceSeqRecord(Record):
             peaks = {base: values[pos] for base, values in self.traces.items()}
             if base != "N":
                 main_peak = peaks[base.upper()]
-                for letter, area in areas.items():
-                    # check for both area and height of peak
-                    if base != letter and area > (areas[base.upper()] * fraction) and peaks[letter] > (main_peak * fraction) \
-                            and self.is_concave(pos, letter):
-                        mixed_peaks.append(i)
+            else:
+                # If the called base is "N", we use the highest peak present as the main peak
+                main_peak = max(peaks.values())
+                base = max(peaks, key=peaks.get)
+            for letter, area in areas.items():
+                # check for both area and height of peak
+                if base != letter and area > (areas[base.upper()] * fraction) and peaks[letter] > (main_peak * fraction) \
+                        and self.is_concave(pos, letter):
+                    mixed_peaks.append(i)
         return mixed_peaks
+
+    def re_find_mixed_peaks(self, f):
+        """Function to re-calculate mixed peaks after object has been constructed"""
+        self.mixed_peaks = self.find_mixed_peaks(f)
+        self.f = f
 
     def signal_to_noise(self, i: int):
         """

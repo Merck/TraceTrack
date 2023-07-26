@@ -39,6 +39,13 @@
             </div>
             <br>
             <div class="form-row">
+                <div class="form-group">
+                    <input type="text" class="form-control" value="0.15" id="fraction" name="fraction" placeholder="0.15">
+                    <label class="formGroupExampleInput" for="fraction">Threshold for calling mixed peaks (<i>f</i>)</label>
+                </div>
+            </div>
+            <br>
+            <div class="form-row">
                 <h4 class="badged-header"><span class="badge badge-primary">4</span>Reference Assignment</h4>
                 {% for trace_key, trace in ref_assignment.items() %}
                     <div class="input-group mb-3">
