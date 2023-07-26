@@ -4,8 +4,7 @@ RUN apt-get update -y \
         && apt-get install -y --no-install-recommends \
             libgtextutils-dev libtbb-dev \
             autoconf automake libcurl4-gnutls-dev libncurses5-dev \
-            build-essential pkg-config \
-        && /usr/local/tracetrack/clean-apt-and-logs.sh
+            build-essential pkg-config 
 
 ENV PATH /opt/miniconda/tracetrack:$PATH
 WORKDIR /tmp
