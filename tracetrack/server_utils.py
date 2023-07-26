@@ -558,13 +558,18 @@ def get_color_bin(value, thresholds):
 
 
 def trace_record_dict(trace: AlignedTrace) -> dict:
-    return {
+    d = {
         'sequence': str(trace.record.seq),
         'traces': [{'base': base, 'values': trace.record.traces[base]} for base in 'GATC'],
         'locations': trace.record.base_locations,
         'alignedPositions': trace.get_aligned_positions(),
         'id': trace.record.id
     }
+    last = max(0, d["locations"][d["alignedPositions"][0]] - 112)  # 112 points to the left of start of reference are still shown
+    for i in range(last):
+        for tr in d["traces"]:
+            tr["values"][i] = 0
+    return d
 
 
 def position_dict(alignment: Alignment, position: int) -> dict:
@@ -586,13 +591,14 @@ def hash_trace_name(pop_number, seq_number):
     return f"{pop_number}_{seq_number}"
 
 
-def schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold):
+def schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold, messages):
     settings = Settings(threshold, end_threshold, separate)
     inputs = []
     inputs_sorted = []
     for population_seqs, population_name in zip(sequences, population_names):
         new_seqlist = []
-        warnings = []
+        warnings = [] + messages
+        messages = []
         for record in population_seqs:
             new_record = record.filter_sequence_by_quality(threshold, end_threshold)
             if new_record.has_base_above_threshold():

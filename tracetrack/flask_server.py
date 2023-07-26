@@ -238,6 +238,16 @@ def alignment_settings_post(task_id, settings_task=None):
     threshold = int(request.form['threshold'])
     end_threshold = int(request.form['end_threshold'])
     separate = 'separate' in request.form
+    fraction = request.form['fraction']
+    messages = []
+    try:
+        fraction_f = float(fraction)
+        if fraction_f <= 0 or fraction_f > 1:
+            messages.append(f"The number provided for 'f' ({fraction}) is outside of the [0, 1] interval. Using default threshold 0.15.")
+            fraction_f = 0.15
+    except ValueError:
+        messages.append(f"The input for 'f' ({fraction}) could not be converted to a number. Using default threshold 0.15.")
+        fraction_f = 0.15
 
     result = scheduler.get_result(task_id)
     if isinstance(result, Exception):
@@ -256,8 +266,9 @@ def alignment_settings_post(task_id, settings_task=None):
             direction = str(request.form[f'dir_for_{seq_id}'])
             dir_flag = True if direction == "Rev" else False
             seq.flag_as_reverse(dir_flag)
+            seq.re_find_mixed_peaks(fraction_f)
 
-    new_id = schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold)
+    new_id = schedule_tasks(sequences, population_names, db, separate, threshold, end_threshold, messages)
     return redirect("/results/" + task_id + "/" + new_id)
 
 

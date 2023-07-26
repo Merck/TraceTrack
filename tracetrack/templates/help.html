@@ -37,6 +37,13 @@
         As the quality towards the ends of trace files tends to decrease, both ends of sequences are discarded until three bases in a row pass the
         trimming threshold. This can also be set by the user and should be higher than the score threshold, otherwise it has no effect.
     </p>
+    <h3>Threshold for calling mixed peaks (<i>f</i>)</h3>
+    <p>
+        The application detects positions, where more than one trace peak is present, resulting in one primary and one or more secondary base calls.
+        This threshold specifies the minimal fraction of the area of the primary peak that another peak has to attain in order to be considered a secondary peak.
+    </p>
+
+
     <h3>Matching to Reference</h3>
     <p>
         Trace files are matched to reference sequences automatically. TraceTrack first checks if the reference ID is contained in the trace file name,
