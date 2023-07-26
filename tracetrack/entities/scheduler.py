@@ -45,6 +45,7 @@ class Scheduler(ABC):
 
 
 class CeleryScheduler(Scheduler):
+    """Scheduler for scheduling tasks in the Celery task queue. Has functions to retrieve results of tasks."""
 
     def get_celery_group_result(self, task_id):
         group_result = celery.GroupResult.restore(task_id)
@@ -92,6 +93,7 @@ class CeleryScheduler(Scheduler):
 
 
 class SimpleInMemoryScheduler(Scheduler):
+    """Simple scheduler for use when running TraceTrack locally."""
     results = {}
 
     def save_result(self, result):
@@ -177,6 +179,10 @@ scheduler: Scheduler = SchedulerProxy()
 
 
 def use_scheduler(name):
+    """
+    Initialize scheduler based on name value. name is passed depending on how TraceTrack is run: simple for running
+    locally, celery for running on a server with a task queue.
+    """
     global scheduler
     if name == 'celery':
         scheduler.wrapped = CeleryScheduler()

@@ -10,11 +10,15 @@ KOZAK = "GCCACC"
 
 
 class AlignedReference:
+    """Class for storing the reference sequence used in an alignment."""
     def __init__(self, record: Record, aligned_seq: Seq):
         self.record = record
         self.aligned_seq, self.ref_to_mut = preserve_lowercase(record.seq, aligned_seq)
 
     def get_feature_for_pos(self, pos):
+        """
+        Return the feature present at given position (e.g. coding sequence) or a default feature when none is present.
+        """
         possible = [feat for feat in self.record.features if feat.location.start <= pos < feat.location.end]
         if len(possible) == 0:
             # TODO: should each position be part of a feature?
@@ -59,6 +63,9 @@ class AlignedTrace:
         return self.leading_seq[-6:] == KOZAK
 
     def find_double_peaks(self):
+        """
+        Get a list of positions with mixed peaks.
+        """
         mapping = self.get_aligned_positions()
         doubles = []
 
@@ -68,6 +75,7 @@ class AlignedTrace:
         return doubles
 
     def has_stop(self):
+        """Indicates whether the aligned sequence ends with a stop codon."""
         return len(self.trailing_seq) >= 3 and translate_codon(self.trailing_seq[:3]) == "*"
 
     def _get_first_base_idx(self):
@@ -78,6 +86,7 @@ class AlignedTrace:
         return None
 
     def _get_last_base_idx(self):
+        """Returns last considered base in aligned_sequence"""
         for idx_from_end, base in enumerate(self.aligned_seq[::-1]):
             if base not in NOT_CONSIDERED_BASES:
                 return len(self.aligned_seq) - idx_from_end - 1

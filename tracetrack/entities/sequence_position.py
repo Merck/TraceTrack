@@ -59,12 +59,14 @@ class SequencePosition:
         return self.ref, confidence, coverage
 
     def get_codon_num(self, mutated: bool) -> int:
+        """Get the position number of the codon at given position in the sequence."""
         if mutated:
             return self.pos_mutated // 3
         else:
             return self.pos_ref // 3
 
     def mixed_peak_css_class(self):
+        """Return string for formatting html sequence display."""
         if self.mixed_peak:
             return "mixed_peak"
         else:

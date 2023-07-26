@@ -15,7 +15,16 @@ TRACE_CHANNELS = {
 
 
 class Feature:
+    """
+    Class for storing features forming part of a sequence - coding or non-coding regions.
+    """
     def __init__(self, type, location, label, fid):
+        """
+        :param type: CDS for coding or other if loaded from GenBank
+        :param location: object of type FeatureLocation containing start and end
+        :param label: label of feature
+        :param fid: unique identifier of feature (numbered from beginning)
+        """
         assert isinstance(location.start, int), 'Location start should be an integer'
         assert isinstance(location.end, int), 'Location end should be an integer'
         self.type = type
@@ -31,6 +40,9 @@ class Feature:
 
 
 class CDS(Feature):
+    """
+    Coding sequence feature
+    """
     def __init__(self, location, label, fid):
         assert isinstance(location.start, int), 'Location start should be an integer'
         assert isinstance(location.end, int), 'Location end should be an integer'
@@ -44,6 +56,9 @@ class CDS(Feature):
 
 
 class Record:
+    """
+    Class for storing a DNA sequence record, contains a sequence, ID and list of (coding) features
+    """
     def __init__(self, sequence: Seq, id: str, features=[]):
         self.seq = sequence
         self.id = id
@@ -51,6 +66,10 @@ class Record:
 
     @classmethod
     def read_from_genbank(cls, seq_record: SeqRecord):
+        """
+        Create a Record object from a Genbank (.gbk) file. Reads each feature - both coding and non-coding -
+        and saves them to the features list.
+        """
         features = []
         cds = False
         i = 0
@@ -84,8 +103,22 @@ class Record:
 
 
 class TraceSeqRecord(Record):
+    """
+    Class for storing information loaded from trace files (.ab1 files).
+    """
     def __init__(self, seq, quality, f, id=None, traces=None, base_locations=None, reference=None,
                  reverse: bool = None):
+        """
+        This constructor is only called by read function below or from other functions starting with an instance, so
+        the parameters need not be understood in too much details - reflects structure of a trace file.
+        :param seq: Seq object with DNA sequence
+        :param quality: list of int representing per base quality
+        :param f: mixed peaks detection threshold
+        :param traces: dict containing a list of trace values for each base
+        :param base_locations: list of positions (int) on the x axis, where each base is called
+        :param reference: reference sequence in the DB, only added after instantiating
+        :param reverse: indicator of whether the sequence should be aligned in the reverse direction
+        """
         assert not isinstance(seq, str), 'Sequence should be a Seq object'
         super().__init__(seq, id)
         self.traces = traces
@@ -142,6 +175,10 @@ class TraceSeqRecord(Record):
         )
 
     def reverse_complement(self, **kwargs):
+        """
+        Return reverse complement of the TraceSeqRecord object (with a reverse-complemented  DNA sequence
+        and opposite order of traces and base locations)
+        """
         num_locations = len(self.traces['A'])
         return TraceSeqRecord(
             self.seq.reverse_complement(**kwargs),
@@ -155,12 +192,18 @@ class TraceSeqRecord(Record):
         )
 
     def has_base_above_threshold(self):
+        """
+        Return bool value indicating whether there is a non-"N" base left in the sequence after quality filtering
+        """
         for i in range(len(self.seq)):
             if self.seq[i] != "N":
                 return True
         return False
 
     def quality_counts(self):
+        """
+        Return number of bases of each quality value within a TraceSeqRecord object
+        """
         counts = np.zeros(100)
         for quality in self.quality:
             counts[quality] += 1
@@ -268,6 +311,9 @@ class TraceSeqRecord(Record):
         return primary / secondary
 
     def check_area_quality(self, i: int, window: int = 10):
+        """
+        Get mean signal-to-noise ratio of "window" bases upstream and "window" bases downstream os position i.
+        """
         ratio = 0
         for base in range(i - window, i + window):
             if base != i:
